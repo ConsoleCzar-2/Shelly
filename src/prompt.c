@@ -34,20 +34,26 @@ void build_prompt(char *prompt_str, size_t size) {
         }
         /* Sub-directory of home dir */
         else if (strncmp(cwd, g_shell_home, home_len) == 0 && cwd[home_len] == '/') {
-            snprintf(display_path, sizeof(display_path), "~%.255s", cwd + home_len);
+            int needed = snprintf(display_path, sizeof(display_path), "~%s", cwd + home_len);
+            if (needed > 256) {
+                display_path[253] = '\0';
+                strcat(display_path, "...");
+            }
         }
         /* Other directories */
         else {
-            snprintf(display_path, sizeof(display_path), "%.256s", cwd);
+            int needed = snprintf(display_path, sizeof(display_path), "%s", cwd);
+            if (needed > 256) {
+                display_path[253] = '\0';
+                strcat(display_path, "...");
+            }
         }
     } else {
-        snprintf(display_path, sizeof(display_path), "%.256s", cwd);
-    }
-
-    /* Cap display_path to 256 chars to prevent prompt overflow */
-    if (strlen(display_path) > 256) {
-        display_path[256] = '\0';
-        strcat(display_path, "...");
+        int needed = snprintf(display_path, sizeof(display_path), "%s", cwd);
+        if (needed > 256) {
+            display_path[253] = '\0';
+            strcat(display_path, "...");
+        }
     }
 
     /* Build prompt string */
